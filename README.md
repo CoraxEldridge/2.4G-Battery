@@ -1,15 +1,13 @@
-# 2.4G Battery
+# 🔋⚡ 2.4G Battery — 键盘 / 触摸板电量小工具 ⌨️🖱️🖥️🪫
 
 > ## ⚠️ 请用户自行使用 AI Agent 基于本仓库源码进行设备匹配
 >
 > 本仓库只保证作者手上的 **迈从 G87** 与 **罗技 Pop-Up Touch for Business** 能读到电量。
 > 其它品牌 / 型号的 2.4G 设备（不同电量特性、不同报告 ID、不同状态字节）**请自行用 AI Agent
-> 阅读本仓库源码后适配**：根据我的设备
-> 
-> 或把设备 VID/PID、HID 报告描述符、原始报告字节喂给 AI Agent，
+> 阅读本仓库源码后适配**：把设备 VID/PID、HID 报告描述符、原始报告字节喂给 AI Agent，
 > 让它照着 `src/BatteryWidget.Core/Protocols/` 里的写法新增或修改一个 Provider 即可。
 
-## 给你的 AI Agent 的提示词（复制即用）
+## 🤖 给你的 AI Agent 的提示词（复制即用）
 
 把下面这段整体复制给 AI Agent（Claude Code / Cursor / Codex / DeepSeek 等），
 并把 `<品牌型号>`、`<VID>`、`<PID>` 换成你自己的设备即可。
@@ -60,7 +58,7 @@ Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻
 
 ![界面](docs/screenshot.png)
 
-## 界面（macOS 风格）
+## 🪟 界面（macOS 风格）
 
 - **无边框窗口 + 交通灯**：左上角红黄绿三颗按钮——红灯收进托盘、黄灯最小化、绿灯缩放；悬停显示 ×/−/+。
 - **自定义标题栏**：居中标题 + 右侧工具栏图标按钮（刷新，SF Symbols 风格 `arrow.clockwise`）；可拖动移动窗口，双击标题栏缩放；四边/四角 6px 热区可拖拽改大小，Win11 下自动圆角。
@@ -70,7 +68,7 @@ Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻
 - **扁平白卡片**：纯白圆角块，无描边、无投影、无悬停交互。
 - 字体优先 **PingFang SC / PingFang HK / 苹方-简** → MiSans → HarmonyOS Sans SC → `Segoe UI Variable Text` → `Segoe UI` → 微软雅黑（装了苹方就自动用，否则逐级回退）。
 
-## 工作方式
+## ⚙️ 工作方式
 
 1. **自动扫描**：枚举系统 HID 接口，按三类通道找可读电量的设备：
    - 迈从（MCHOSE）`41E4:*`：`0xFF04` 使用页上的 Feature Report `RID 0x06`；
@@ -81,7 +79,7 @@ Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻
 
 ![选择设备](docs/select-devices.png)
 
-## 已验证的设备
+## ✅ 已验证的设备
 
 | 设备 | 识别方式 | 电量来源 |
 | --- | --- | --- |
@@ -90,7 +88,7 @@ Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻
 
 > 罗技这台机型有点特殊：`0x1004` 的 fn0 首个字节不是百分比（实测 `0x0F`=15），fn1 才是真实电量（`0x46`=70，与 Logi Options+ 一致）。程序优先用 fn1，读不到时回退 fn0。
 
-## 功能
+## ✨ 功能
 
 - 每台选中设备一张卡片：名称、类型、连接方式、在线状态、电量百分比、充电/放电状态、电量条。
 - **立即刷新**：点标题栏右上的刷新图标，对休眠设备做多轮 HID++ 唤醒尝试后再读。
@@ -101,7 +99,7 @@ Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻
 - 关闭窗口最小化到托盘；托盘双击恢复，右键菜单可刷新或退出。
 - 设置保存在 `%LOCALAPPDATA%\BatteryWidget\settings.json`（勾选的设备、刷新间隔）。
 
-## 安装包
+## 📦 安装包
 
 用 Inno Setup 7 打包，安装包自带 .NET 运行时，装完可直接运行。
 
@@ -116,7 +114,7 @@ powershell -File scripts\build-installer.ps1
 - 卸载：开始菜单里的「卸载 2.4G Battery」或 Windows「设置 → 应用」；
 - 用户配置（勾选的设备、刷新间隔）保存在 `%LOCALAPPDATA%\BatteryWidget\settings.json`，卸载时保留。
 
-## 运行
+## ▶️ 运行
 
 ```powershell
 # 安装版
@@ -129,7 +127,7 @@ powershell -File scripts\build-installer.ps1
 dotnet run --project src\BatteryWidget
 ```
 
-## 构建
+## 🛠️ 构建
 
 需要 .NET 10 SDK（Windows）。
 
@@ -143,7 +141,7 @@ powershell -File scripts\publish.ps1
 powershell -File scripts\publish.ps1 -SelfContained
 ```
 
-## 项目结构
+## 🗂️ 项目结构
 
 ```
 src/BatteryWidget.Core/              协议与设备读取（无 UI 依赖）
@@ -171,11 +169,11 @@ scripts/publish.ps1                  绿色版发布脚本
 scripts/build-installer.ps1          打包安装程序（发布 + ISCC）
 ```
 
-### 想支持新设备？
+### 🧩 想支持新设备？
 
 在 `Protocols/` 下加一个 `IDeviceProvider`，并在 `DeviceDiscovery.Scan()` 里加一段识别逻辑即可，界面不需要改。
 
-## 诊断工具
+## 🔍 诊断工具
 
 ```powershell
 dotnet run --project tools\HidProbe -- read      # 用正式代码路径读一遍电量
@@ -185,7 +183,7 @@ dotnet run --project tools\HidProbe -- dev 4     # 指定接收器索引的详�
 dotnet run --project tools\HidProbe -- mchose-raw2  # 迈从配置通道原始探测
 ```
 
-## 已知限制
+## ⚠️ 已知限制
 
 - **罗技设备休眠**：2.4G 设备闲置几秒后会休眠，HID++ 请求返回 `CONNECTION_REQUEST_FAILED`。界面保留上次读数并标「休眠中 · 轻触设备可唤醒」，点「立即刷新」会做唤醒尝试。
 - **Logi Options+ 冲突**：Options+ 可能占用接收器的 HID++ 接口。若提示打不开 HID++ 接口，退出 Options+ 后重试。
@@ -193,7 +191,7 @@ dotnet run --project tools\HidProbe -- mchose-raw2  # 迈从配置通道原始�
 - **迈从设置**：官方未公开键盘配置协议，目前只读电量。`0xFF02` 配置通道已确认（唯一可用 Report ID `0x13`、带校验字节），但灯效/回报率/休眠/按键映射的命令语义未确认，因此不写入任何配置。
 - **有线连接**：目前只验证 2.4G 接收器；USB 线直连时 PID 会变化，暂未适配。
 
-## 字体
+## 🔤 字体
 
 界面字体**内嵌**在程序里，用的是苹方（PingFang SC）：
 
