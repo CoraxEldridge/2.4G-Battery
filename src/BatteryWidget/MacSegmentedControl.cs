@@ -2,11 +2,19 @@ using System.Drawing.Drawing2D;
 
 namespace BatteryWidget;
 
-/// <summary>macOS 分段控件（Segmented Control）。</summary>
+/// <summary>macOS 分段控件（Segmented Control），选中块带滑动动画。</summary>
 public sealed class MacSegmentedControl : Control
 {
+    private const int DurationMs = 180;
+
     private readonly Font _font = MacTheme.Font(8.5f);
+    private readonly System.Windows.Forms.Timer _animation = new() { Interval = 1000 / 60 };
+
     private int _selectedIndex;
+    private float _position;
+    private float _from;
+    private float _to;
+    private long _startTicks;
 
     public string[] Items { get; set; } = Array.Empty<string>();
 
@@ -18,7 +26,9 @@ public sealed class MacSegmentedControl : Control
             var clamped = Math.Clamp(value, 0, Math.Max(0, Items.Length - 1));
             if (clamped == _selectedIndex)
                 return;
+
             _selectedIndex = clamped;
+            BeginAnimation();
             Invalidate();
             SelectionChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -33,17 +43,43 @@ public sealed class MacSegmentedControl : Control
         Height = 28;
         Cursor = Cursors.Hand;
         BackColor = Color.Transparent;
+        _animation.Tick += (_, _) => Animate();
     }
 
-    protected override void OnClick(EventArgs e)
+    /// <summary>从当前偏移开始补间，快速连点也顺滑。</summary>
+    private void BeginAnimation()
     {
-        base.OnClick(e);
-        if (Items.Length == 0)
+        _from = _position;
+        _to = _selectedIndex;
+        _startTicks = Environment.TickCount64;
+        _animation.Start();
+    }
+
+    private void Animate()
+    {
+        var progress = Math.Clamp((Environment.TickCount64 - _startTicks) / (float)DurationMs, 0f, 1f);
+        var eased = 1f - MathF.Pow(1f - progress, 3f);
+        _position = _from + (_to - _from) * eased;
+
+        if (progress >= 1f)
+        {
+            _position = _to;
+            _animation.Stop();
+        }
+
+        Invalidate();
+    }
+
+    // 在 MouseDown 立即响应，避免快速点击丢失
+    protected override void OnMouseDown(MouseEventArgs e)
+    {
+        base.OnMouseDown(e);
+        if (e.Button != MouseButtons.Left || Items.Length == 0)
             return;
 
+        Focus();
         var segment = Width / (float)Items.Length;
-        var index = (int)(PointToClient(Cursor.Position).X / segment);
-        SelectedIndex = Math.Clamp(index, 0, Items.Length - 1);
+        SelectedIndex = Math.Clamp((int)(e.X / segment), 0, Items.Length - 1);
     }
 
     protected override void OnPaint(PaintEventArgs e)
@@ -61,7 +97,8 @@ public sealed class MacSegmentedControl : Control
             return;
 
         var segmentWidth = outer.Width / Items.Length;
-        var selectedRect = new RectangleF(outer.X + segmentWidth * _selectedIndex + 1, outer.Y + 1,
+        var position = Math.Clamp(_position, 0f, Items.Length - 1f);
+        var selectedRect = new RectangleF(outer.X + segmentWidth * position + 1, outer.Y + 1,
             segmentWidth - 2, outer.Height - 2);
 
         using (var shadow = new SolidBrush(Color.FromArgb(22, 0, 0, 0)))
@@ -76,21 +113,27 @@ public sealed class MacSegmentedControl : Control
         using var format = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
         for (var i = 0; i < Items.Length; i++)
         {
-            var color = i == _selectedIndex ? MacTheme.Text : MacTheme.Secondary;
+            // 离选中块越近越深，滑动时文字颜色跟着过渡
+            var weight = Math.Clamp(1f - Math.Abs(i - position), 0f, 1f);
+            var color = Blend(MacTheme.Secondary, MacTheme.Text, weight);
             using var brush = new SolidBrush(color);
             var rect = new RectangleF(outer.X + segmentWidth * i, outer.Y, segmentWidth, outer.Height);
             g.DrawString(Items[i], _font, brush, rect, format);
         }
     }
 
+    private static Color Blend(Color from, Color to, float amount) => Color.FromArgb(
+        (int)(from.R + (to.R - from.R) * amount),
+        (int)(from.G + (to.G - from.G) * amount),
+        (int)(from.B + (to.B - from.B) * amount));
+
     protected override void Dispose(bool disposing)
     {
         if (disposing)
+        {
+            _animation.Dispose();
             _font.Dispose();
+        }
         base.Dispose(disposing);
     }
 }
-
-
-
-
