@@ -1,11 +1,11 @@
-﻿using System.Threading;
+using System.Threading;
 
 namespace BatteryWidget;
 
 internal static class Program
 {
     [STAThread]
-    private static void Main(string[] args)
+            private static void Main(string[] args)
     {
         Application.SetHighDpiMode(HighDpiMode.PerMonitorV2);
         Application.EnableVisualStyles();

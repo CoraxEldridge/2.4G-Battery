@@ -7,13 +7,14 @@ public sealed class MacSwitch : Control
 {
     private const int DurationMs = 180;
 
-    private readonly System.Windows.Forms.Timer _animation = new() { Interval = 1000 / 60 };
+    private readonly System.Windows.Forms.Timer _animation = new() { Interval = Anim.TickMs };
     private bool _checked;
     private bool _hover;
     private float _position;
     private float _from;
     private float _to;
-    private long _startTicks;
+    private double _startMs;
+    private double _lastFrameMs;
 
     public event EventHandler? CheckedChanged;
 
@@ -46,23 +47,33 @@ public sealed class MacSwitch : Control
     {
         _from = _position;
         _to = _checked ? 1f : 0f;
-        _startTicks = Environment.TickCount64;
+        _startMs = Anim.NowMs;
+        _lastFrameMs = 0;
+        Anim.BeginFramePrecision();
         _animation.Start();
     }
 
     private void Animate()
     {
-        var progress = Math.Clamp((Environment.TickCount64 - _startTicks) / (float)DurationMs, 0f, 1f);
-        var eased = 1f - MathF.Pow(1f - progress, 3f);
+        var now = Anim.NowMs;
+        if (now - _lastFrameMs < Anim.FrameIntervalMs)
+            return;
+
+        _lastFrameMs = now;
+
+        var progress = (float)Math.Clamp((now - _startMs) / DurationMs, 0.0, 1.0);
+        var eased = Anim.EaseOutCubic(progress);
         _position = _from + (_to - _from) * eased;
 
         if (progress >= 1f)
         {
             _position = _to;
             _animation.Stop();
+            Anim.EndFramePrecision();
         }
 
         Invalidate();
+        Update(); // 立即重绘，稳定跑满 60fps
     }
 
     // 在 MouseDown 立即切换：比 Click（要求按下与抬起都在控件内）更跟手

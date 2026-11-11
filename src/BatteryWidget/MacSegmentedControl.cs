@@ -8,13 +8,14 @@ public sealed class MacSegmentedControl : Control
     private const int DurationMs = 180;
 
     private readonly Font _font = MacTheme.Font(8.5f);
-    private readonly System.Windows.Forms.Timer _animation = new() { Interval = 1000 / 60 };
+    private readonly System.Windows.Forms.Timer _animation = new() { Interval = Anim.TickMs };
 
     private int _selectedIndex;
     private float _position;
     private float _from;
     private float _to;
-    private long _startTicks;
+    private double _startMs;
+    private double _lastFrameMs;
 
     public string[] Items { get; set; } = Array.Empty<string>();
 
@@ -36,6 +37,9 @@ public sealed class MacSegmentedControl : Control
 
     public event EventHandler? SelectionChanged;
 
+    /// <summary>每渲染一帧触发，参数为该帧时间戳（毫秒），供帧率自测使用。</summary>
+    internal event Action<double>? FrameRendered;
+
     public MacSegmentedControl()
     {
         SetStyle(ControlStyles.ResizeRedraw | ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint
@@ -51,23 +55,34 @@ public sealed class MacSegmentedControl : Control
     {
         _from = _position;
         _to = _selectedIndex;
-        _startTicks = Environment.TickCount64;
+        _startMs = Anim.NowMs;
+        _lastFrameMs = 0;
+        Anim.BeginFramePrecision();
         _animation.Start();
     }
 
     private void Animate()
     {
-        var progress = Math.Clamp((Environment.TickCount64 - _startTicks) / (float)DurationMs, 0f, 1f);
-        var eased = 1f - MathF.Pow(1f - progress, 3f);
+        var now = Anim.NowMs;
+        if (now - _lastFrameMs < Anim.FrameIntervalMs)
+            return;
+
+        _lastFrameMs = now;
+
+        var progress = (float)Math.Clamp((now - _startMs) / DurationMs, 0.0, 1.0);
+        var eased = Anim.EaseOutCubic(progress);
         _position = _from + (_to - _from) * eased;
 
         if (progress >= 1f)
         {
             _position = _to;
             _animation.Stop();
+            Anim.EndFramePrecision();
         }
 
         Invalidate();
+        Update(); // 立即重绘，避免等待消息循环导致掉帧
+        FrameRendered?.Invoke(now);
     }
 
     // 在 MouseDown 立即响应，避免快速点击丢失
