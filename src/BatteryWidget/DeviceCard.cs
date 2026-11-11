@@ -67,9 +67,9 @@ using (var cardBrush = new SolidBrush(MacTheme.Card))
         // SF 风格线描图标
         SfIcon.Draw(g, Kind, new RectangleF(rect.X + 18, rect.Y + 17, 36, 36), MacTheme.Secondary, 1.6f);
 
-        // 设备名单独用灰度抗锯齿，其余文字保持 ClearType
+        // 设备名属于大字，用灰度抗锯齿（避免 ClearType 的彩边）
         var previousHint = g.TextRenderingHint;
-        g.TextRenderingHint = MacTheme.SmallTextHint;
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
         using (var nameBrush = new SolidBrush(MacTheme.Text))
             g.DrawString(name, _nameFont, nameBrush, rect.X + 66, rect.Y + 16);
         g.TextRenderingHint = previousHint;
@@ -85,8 +85,8 @@ using (var cardBrush = new SolidBrush(MacTheme.Card))
             g.DrawString(stateText, _smallFont, stateBrush, rect.X + 76, rect.Y + 62);
 
         var percentText = percent.HasValue ? $"{percent.Value}%" : "--";
-        // 25pt 大字用次像素抗锯齿更锐利
-        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+        // 25pt 百分比属于大字，同样用灰度抗锯齿
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
         using (var percentBrush = new SolidBrush(MacTheme.LevelColor(percent)))
         {
             var size = g.MeasureString(percentText, _percentFont);

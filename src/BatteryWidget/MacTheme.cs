@@ -7,8 +7,8 @@ namespace BatteryWidget;
 /// <summary>macOS 浅色风格配色与绘制工具。</summary>
 internal static class MacTheme
 {
-    /// <summary>小字渲染方式。当前: 不开抗锯齿（锐利、可能有锯齿）。</summary>
-    public const TextRenderingHint SmallTextHint = TextRenderingHint.SingleBitPerPixelGridFit;
+    /// <summary>小字渲染方式：9pt 以下的密集汉字用次像素抗锯齿更清晰。</summary>
+    public const TextRenderingHint SmallTextHint = TextRenderingHint.ClearTypeGridFit;
 
     public static readonly Color Window = Color.FromArgb(242, 242, 247);
     public static readonly Color Card = Color.White;

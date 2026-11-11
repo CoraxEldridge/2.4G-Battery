@@ -64,9 +64,10 @@ public sealed class MainForm : MacForm, IMessageFilter
             Text = "实时读取 2.4G 接收器上的设备电量",
             Font = MacTheme.Font(9f),
             ForeColor = MacTheme.Secondary,
+            Hint = MacTheme.SmallTextHint,
             AutoSize = true,
             Location = new Point(Edge + 1, 44),
-            BackColor = Color.Transparent
+            BackColor = MacTheme.Window
         };
         header.Controls.Add(_subtitle);
 
@@ -94,9 +95,10 @@ public sealed class MainForm : MacForm, IMessageFilter
             Text = "刷新",
             Font = MacTheme.Font(9f),
             ForeColor = MacTheme.Text,
+            Hint = MacTheme.SmallTextHint,
             AutoSize = true,
             Location = new Point(Edge, 22),
-            BackColor = Color.Transparent
+            BackColor = MacTheme.Window
         });
 
         _refreshMode = new MacSegmentedControl
@@ -120,9 +122,10 @@ public sealed class MainForm : MacForm, IMessageFilter
             Text = "开机自启",
             Font = MacTheme.Font(9f),
             ForeColor = MacTheme.Text,
+            Hint = MacTheme.SmallTextHint,
             AutoSize = true,
             Location = new Point(Edge + 240, 22),
-            BackColor = Color.Transparent,
+            BackColor = MacTheme.Window,
             Cursor = Cursors.Hand
         };
         footer.Controls.Add(autoStartLabel);
@@ -170,9 +173,10 @@ public sealed class MainForm : MacForm, IMessageFilter
             Text = "正在读取…",
             Font = MacTheme.Font(8.5f),
             ForeColor = MacTheme.Tertiary,
+            Hint = MacTheme.SmallTextHint,
             AutoSize = true,
             Location = new Point(Edge, 64),
-            BackColor = Color.Transparent
+            BackColor = MacTheme.Window
         };
         footer.Controls.Add(_statusLabel);
 
