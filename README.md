@@ -1,4 +1,11 @@
-﻿# 2.4G Battery
+# 2.4G Battery
+
+> ## ⚠️ 请用户自行使用 AI Agent 基于本仓库源码进行设备匹配
+>
+> 本仓库只保证作者手上的 **迈从 G87** 与 **罗技 Pop-Up Touch for Business** 能读到电量。
+> 其它品牌 / 型号的 2.4G 设备（不同电量特性、不同报告 ID、不同状态字节）**请自行用 AI Agent
+> 阅读本仓库源码后适配**：把设备 VID/PID、HID 报告描述符、原始报告字节喂给 AI Agent，
+> 让它照着 `src/BatteryWidget.Core/Protocols/` 里的写法新增或修改一个 Provider 即可。
 
 Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻系统托盘。
 

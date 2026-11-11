@@ -4,7 +4,8 @@
     [switch]$Private,
     [switch]$CreateRepo,
     [switch]$ReplaceAssets,
-    [switch]$SourceOnly
+    [switch]$SourceOnly,
+    [switch]$Force
 )
 
 $ErrorActionPreference = 'Stop'
@@ -92,7 +93,13 @@ try {
 
     # token 只出现在本次命令参数里，不写入 .git/config
     $pushUrl = "https://x-access-token:$token@github.com/$owner/$RepoName.git"
-    git push $pushUrl "main:main"
+    if ($Force) {
+        git push --force $pushUrl "main:main"
+        git push --force $pushUrl "refs/tags/$Tag"
+    }
+    else {
+        git push $pushUrl "main:main"
+    }
     if ($LASTEXITCODE -ne 0) {
         throw "git push 失败（退出码 $LASTEXITCODE）"
     }
