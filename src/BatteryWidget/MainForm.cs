@@ -301,6 +301,7 @@ public sealed class MainForm : MacForm, IMessageFilter
     }
 
     private readonly HashSet<string> _asleep = new();
+    private readonly Dictionary<string, DateTime> _chargingUntil = new();
     private int _scrollY;
     private int _maxScroll;
     private DateTime _lastWakeAttempt = DateTime.MinValue;
@@ -368,10 +369,17 @@ public sealed class MainForm : MacForm, IMessageFilter
                     // 部分罗技设备充电时仍上报"放电中"（实测插着线电量从 70% 涨到 90%，
                     // 状态字节却一直是 0），这里用电量上升做一次兜底判断。
                     var previous = LastGood(id)?.Percent;
-                    if (snapshot.Battery.Status == BatteryStatus.Discharging
-                        && previous is { } before
+                    if (previous is { } before
                         && snapshot.Battery.Percent is { } now
                         && now > before)
+                    {
+                        // 电量上涨说明在充电，保持 10 分钟，避免读数不变时状态来回跳
+                        _chargingUntil[id] = DateTime.UtcNow.AddMinutes(10);
+                    }
+
+                    if (snapshot.Battery.Status == BatteryStatus.Discharging
+                        && _chargingUntil.TryGetValue(id, out var until)
+                        && DateTime.UtcNow < until)
                     {
                         snapshot = snapshot with
                         {
