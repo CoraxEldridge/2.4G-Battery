@@ -1,0 +1,13 @@
+# 构建产物
+bin/
+obj/
+dist/
+
+# 用户/IDE 文件
+.vs/
+*.user
+*.suo
+
+# 与本项目无关的临时文件
+video/
+shot_*.png

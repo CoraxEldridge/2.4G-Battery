@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>BatteryWidget</AssemblyName>
+    <RootNamespace>BatteryWidget</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Product>2.4G Battery</Product>
+    <Company>BatteryWidget</Company>
+    <Description>查看 2.4G 无线键盘与触摸板电量</Description>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <!-- 自绘控件不参与 WinForms 设计器，关闭属性序列化分析器 -->
+    <NoWarn>$(NoWarn);WFO1000</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BatteryWidget.Core\BatteryWidget.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 内嵌苹方字体：程序启动时用 PrivateFontCollection 从内存加载，无需安装 -->
+    <EmbeddedResource Include="Fonts\PingFangSC-Regular.ttf" LogicalName="BatteryWidget.Fonts.PingFangSC-Regular.ttf" />
+    <EmbeddedResource Include="Fonts\PingFangSC-Semibold.ttf" LogicalName="BatteryWidget.Fonts.PingFangSC-Semibold.ttf" />
+  </ItemGroup>
+
+</Project>
+
+
