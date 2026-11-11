@@ -28,9 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- 内嵌苹方字体：程序启动时用 PrivateFontCollection 从内存加载，无需安装 -->
-    <EmbeddedResource Include="Fonts\PingFangSC-Regular.ttf" LogicalName="BatteryWidget.Fonts.PingFangSC-Regular.ttf" />
-    <EmbeddedResource Include="Fonts\PingFangSC-Semibold.ttf" LogicalName="BatteryWidget.Fonts.PingFangSC-Semibold.ttf" />
+    <!-- 内嵌思源系字体 Sarasa UI SC（Regular / SemiBold），启动时从内存加载，无需安装 -->
+    <EmbeddedResource Include="Fonts\SarasaUiSC-Regular.ttf" LogicalName="BatteryWidget.Fonts.SarasaUiSC-Regular.ttf" />
+    <EmbeddedResource Include="Fonts\SarasaUiSC-SemiBold.ttf" LogicalName="BatteryWidget.Fonts.SarasaUiSC-SemiBold.ttf" />
   </ItemGroup>
 
 </Project>

@@ -1,4 +1,4 @@
-﻿using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Runtime.InteropServices;
 
@@ -7,6 +7,9 @@ namespace BatteryWidget;
 /// <summary>macOS 浅色风格配色与绘制工具。</summary>
 internal static class MacTheme
 {
+    /// <summary>小字渲染方式。当前: 不开抗锯齿（锐利、可能有锯齿）。</summary>
+    public const TextRenderingHint SmallTextHint = TextRenderingHint.SingleBitPerPixelGridFit;
+
     public static readonly Color Window = Color.FromArgb(242, 242, 247);
     public static readonly Color Card = Color.White;
     public static readonly Color Border = Color.FromArgb(229, 229, 234);
@@ -40,8 +43,8 @@ internal static class MacTheme
 
     static MacTheme()
     {
-        RegularFonts = LoadEmbedded("BatteryWidget.Fonts.PingFangSC-Regular.ttf");
-        SemiboldFonts = LoadEmbedded("BatteryWidget.Fonts.PingFangSC-Semibold.ttf");
+        RegularFonts = LoadEmbedded("BatteryWidget.Fonts.SarasaUiSC-Regular.ttf");
+        SemiboldFonts = LoadEmbedded("BatteryWidget.Fonts.SarasaUiSC-SemiBold.ttf");
         RegularFamily = FirstFamily(RegularFonts);
         SemiboldFamily = FirstFamily(SemiboldFonts);
         FallbackFamily = ResolveFamily();

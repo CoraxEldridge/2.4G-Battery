@@ -63,7 +63,7 @@ public sealed class DeviceRow : Control
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+        g.TextRenderingHint = MacTheme.SmallTextHint;
 
         using (var bg = new SolidBrush(_hover ? MacTheme.Hover : MacTheme.Card))
         using (var path = MacTheme.RoundedRect(new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f), 10f))

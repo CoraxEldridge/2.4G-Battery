@@ -61,12 +61,15 @@ using (var cardBrush = new SolidBrush(MacTheme.Card))
         var percent = reading?.Percent;
         var online = _snapshot?.Online ?? false;
 
+        // 卡片内的小字统一用灰度抗锯齿（11px 左右的汉字用 ClearType 会出现 1px 硬边）
+        g.TextRenderingHint = MacTheme.SmallTextHint;
+
         // SF 风格线描图标
         SfIcon.Draw(g, Kind, new RectangleF(rect.X + 18, rect.Y + 17, 36, 36), MacTheme.Secondary, 1.6f);
 
         // 设备名单独用灰度抗锯齿，其余文字保持 ClearType
         var previousHint = g.TextRenderingHint;
-        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAliasGridFit;
+        g.TextRenderingHint = MacTheme.SmallTextHint;
         using (var nameBrush = new SolidBrush(MacTheme.Text))
             g.DrawString(name, _nameFont, nameBrush, rect.X + 66, rect.Y + 16);
         g.TextRenderingHint = previousHint;
@@ -82,11 +85,16 @@ using (var cardBrush = new SolidBrush(MacTheme.Card))
             g.DrawString(stateText, _smallFont, stateBrush, rect.X + 76, rect.Y + 62);
 
         var percentText = percent.HasValue ? $"{percent.Value}%" : "--";
+        // 25pt 大字用次像素抗锯齿更锐利
+        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
         using (var percentBrush = new SolidBrush(MacTheme.LevelColor(percent)))
         {
             var size = g.MeasureString(percentText, _percentFont);
             g.DrawString(percentText, _percentFont, percentBrush, rect.Right - 18 - size.Width, rect.Y + 12);
         }
+
+        // 回到灰度抗锯齿，后面的状态/更新时间也是小字
+        g.TextRenderingHint = MacTheme.SmallTextHint;
 
         var statusText = online ? reading?.StatusText ?? "状态未知" : reading != null ? "休眠中" : "";
         if (!string.IsNullOrEmpty(statusText))

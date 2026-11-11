@@ -101,7 +101,7 @@ public sealed class MacSegmentedControl : Control
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+        g.TextRenderingHint = MacTheme.SmallTextHint;
 
         var outer = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
         using (var bgPath = MacTheme.RoundedRect(outer, 7f))

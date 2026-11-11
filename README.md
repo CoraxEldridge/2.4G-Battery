@@ -193,16 +193,28 @@ dotnet run --project tools\HidProbe -- mchose-raw2  # 迈从配置通道原始�
 
 ## 🔤 字体
 
-界面字体**内嵌**在程序里，用的是苹方（PingFang SC）：
+界面字体**内嵌**在程序里，用的是 [Sarasa Gothic](https://github.com/be5invis/Sarasa-Gothic) 的 **Sarasa UI SC**
+（更纱黑体 UI SC，思源黑体 + Iosevka 衍生）：
 
-- `src/BatteryWidget/Fonts/PingFangSC-Regular.ttf`（常规）
-- `src/BatteryWidget/Fonts/PingFangSC-Semibold.ttf`（粗体）
+- `src/BatteryWidget/Fonts/SarasaUiSC-Regular.ttf`（常规，约 3.5 MB）
+- `src/BatteryWidget/Fonts/SarasaUiSC-SemiBold.ttf`（粗体，约 3.5 MB）
 
 编译时作为 `EmbeddedResource` 打进程序集，启动时用 `PrivateFontCollection.AddMemoryFont` 从内存加载，
-所以**不需要在系统里安装字体**，换台机器界面也是苹方。找不到内嵌字体时才按
-`Segoe UI Variable Text` → `Segoe UI` → `微软雅黑` 回退。
+**不需要在系统里安装字体**。找不到内嵌字体时才按 `Segoe UI Variable Text` → `Segoe UI` → `微软雅黑` 回退。
 
-> 注意：苹方是苹果的系统字体，字体文件来自第三方打包仓库（该仓库以 MIT 许可分发打包代码）。
-> 如果要公开发布，请自行确认字体授权；不想把字体放进仓库的话，把 `src/BatteryWidget/Fonts/*.ttf`
-> 加进 `.gitignore` 即可，但别人克隆后需要自行放置字体才能编译。
+字体是从 800 MB 的 `Sarasa-SuperTTC.ttc` 里抽出来的，并做了子集化（GB2312 汉字 + 拉丁 + 标点），
+所以每个字重只有 3.5 MB。抽取脚本见 [tools/extract-sarasa.py](tools/extract-sarasa.py)，换字体时改路径即可。
 
+> 授权：Sarasa Gothic 使用 **SIL Open Font License 1.1**，可自由嵌入与再分发，需保留版权声明。
+
+### 小字抗锯齿
+
+小字渲染方式集中在 [MacTheme.cs](src/BatteryWidget/MacTheme.cs) 的 `SmallTextHint` 常量：
+
+| 取值 | 效果 |
+| --- | --- |
+| `AntiAliasGridFit` | 灰度抗锯齿（柔和、无彩边） |
+| `SingleBitPerPixelGridFit` | 不开抗锯齿（锐利、有锯齿，当前值） |
+| `ClearTypeGridFit` | 次像素抗锯齿（最锐，细看有彩边） |
+
+大字（19pt 标题、25pt 百分比）不受该常量影响。

@@ -67,7 +67,7 @@ public sealed class MacButton : Control
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+        g.TextRenderingHint = MacTheme.SmallTextHint;
 
         var rect = new RectangleF(0.5f, 0.5f, Width - 1.5f, Height - 1.5f);
         using var path = MacTheme.RoundedRect(rect, 7f);

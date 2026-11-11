@@ -11,6 +11,9 @@ public sealed class GrayscaleLabel : Control
         FormatFlags = StringFormatFlags.NoWrap | StringFormatFlags.NoClip
     };
 
+    /// <summary>文字渲染方式，默认灰度抗锯齿；小字号可设为 SingleBitPerPixelGridFit。</summary>
+    public TextRenderingHint Hint { get; set; } = TextRenderingHint.AntiAliasGridFit;
+
     public GrayscaleLabel()
     {
         DoubleBuffered = true;
@@ -27,11 +30,23 @@ public sealed class GrayscaleLabel : Control
         Size = new Size((int)Math.Ceiling(size.Width) + 2, (int)Math.Ceiling(size.Height) + 2);
     }
 
+    protected override void OnTextChanged(EventArgs e)
+    {
+        base.OnTextChanged(e);
+        FitToText();
+    }
+
+    protected override void OnFontChanged(EventArgs e)
+    {
+        base.OnFontChanged(e);
+        FitToText();
+    }
+
     protected override void OnPaint(PaintEventArgs e)
     {
         var g = e.Graphics;
         g.SmoothingMode = SmoothingMode.AntiAlias;
-        g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+        g.TextRenderingHint = Hint;
 
         using var brush = new SolidBrush(ForeColor);
         g.DrawString(Text, Font, brush, 0f, 0f, Format);

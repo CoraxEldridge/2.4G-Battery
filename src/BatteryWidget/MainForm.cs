@@ -25,8 +25,8 @@ public sealed class MainForm : MacForm, IMessageFilter
     private readonly MacButton _selectButton;
     private readonly MacSegmentedControl _refreshMode;
     private readonly MacSwitch _autoStart;
-    private readonly Label _statusLabel;
-    private readonly Label _subtitle;
+    private readonly GrayscaleLabel _statusLabel;
+    private readonly GrayscaleLabel _subtitle;
 
     private bool _busy;
 
@@ -59,7 +59,7 @@ public sealed class MainForm : MacForm, IMessageFilter
         };
         titleLabel.FitToText();
         header.Controls.Add(titleLabel);
-        _subtitle = new Label
+        _subtitle = new GrayscaleLabel
         {
             Text = "实时读取 2.4G 接收器上的设备电量",
             Font = MacTheme.Font(9f),
@@ -89,7 +89,7 @@ public sealed class MainForm : MacForm, IMessageFilter
             e.Graphics.DrawLine(pen, Edge, 0, footer.Width - Edge, 0);
         };
 
-        footer.Controls.Add(new Label
+        footer.Controls.Add(new GrayscaleLabel
         {
             Text = "刷新",
             Font = MacTheme.Font(9f),
@@ -115,7 +115,7 @@ public sealed class MainForm : MacForm, IMessageFilter
         };
         footer.Controls.Add(_refreshMode);
 
-        var autoStartLabel = new Label
+        var autoStartLabel = new GrayscaleLabel
         {
             Text = "开机自启",
             Font = MacTheme.Font(9f),
@@ -165,7 +165,7 @@ public sealed class MainForm : MacForm, IMessageFilter
             githubLink.Location = new Point(footer.Width - Edge - githubLink.Width, 17);
         githubLink.Location = new Point(footer.Width - Edge - githubLink.Width, 17);
 
-        _statusLabel = new Label
+        _statusLabel = new GrayscaleLabel
         {
             Text = "正在读取…",
             Font = MacTheme.Font(8.5f),
