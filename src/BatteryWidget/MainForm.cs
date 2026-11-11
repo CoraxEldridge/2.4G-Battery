@@ -3,7 +3,7 @@ using BatteryWidget.Core.Services;
 
 namespace BatteryWidget;
 
-public sealed class MainForm : MacForm
+public sealed class MainForm : MacForm, IMessageFilter
 {
     private const string RepositoryUrl = "https://github.com/CoraxEldridge/2.4G-Battery";
     private const int CardHeight = 158;
@@ -36,7 +36,7 @@ public sealed class MainForm : MacForm
 
         Text = "2.4G Battery";
         ClientSize = new Size(700, 596);
-        MinimumSize = new Size(560, 480);
+        MinimumSize = new Size(420, 360);
         CloseToTray = true;
         BackColor = MacTheme.Window;
 
@@ -115,15 +115,17 @@ public sealed class MainForm : MacForm
         };
         footer.Controls.Add(_refreshMode);
 
-        footer.Controls.Add(new Label
+        var autoStartLabel = new Label
         {
             Text = "开机自启",
             Font = MacTheme.Font(9f),
             ForeColor = MacTheme.Text,
             AutoSize = true,
             Location = new Point(Edge + 240, 22),
-            BackColor = Color.Transparent
-        });
+            BackColor = Color.Transparent,
+            Cursor = Cursors.Hand
+        };
+        footer.Controls.Add(autoStartLabel);
         _autoStart = new MacSwitch
         {
             Location = new Point(Edge + 308, 17),
@@ -141,6 +143,7 @@ public sealed class MainForm : MacForm
                     MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         };
+        autoStartLabel.Click += (_, _) => _autoStart.Checked = !_autoStart.Checked;
         footer.Controls.Add(_autoStart);
 
         // 右侧：GitHub 项目链接
@@ -178,9 +181,10 @@ public sealed class MainForm : MacForm
         {
             Dock = DockStyle.Fill,
             BackColor = Color.Transparent,
-            AutoScroll = true
+            AutoScroll = false
         };
         _content.Resize += (_, _) => Relayout();
+        Application.AddMessageFilter(this);
         _content.Paint += PaintContent;
 
         Body.Controls.Add(_content);
@@ -297,6 +301,8 @@ public sealed class MainForm : MacForm
     }
 
     private readonly HashSet<string> _asleep = new();
+    private int _scrollY;
+    private int _maxScroll;
     private DateTime _lastWakeAttempt = DateTime.MinValue;
 
     private async void RefreshDevices(bool deep)
@@ -358,7 +364,23 @@ public sealed class MainForm : MacForm
             {
                 _known[id] = (snapshot.Name, snapshot.Kind);
                 if (snapshot.Battery?.Percent is not null)
+                {
+                    // 部分罗技设备充电时仍上报"放电中"（实测插着线电量从 70% 涨到 90%，
+                    // 状态字节却一直是 0），这里用电量上升做一次兜底判断。
+                    var previous = LastGood(id)?.Percent;
+                    if (snapshot.Battery.Status == BatteryStatus.Discharging
+                        && previous is { } before
+                        && snapshot.Battery.Percent is { } now
+                        && now > before)
+                    {
+                        snapshot = snapshot with
+                        {
+                            Battery = snapshot.Battery with { Status = BatteryStatus.Charging }
+                        };
+                    }
+
                     RecordGood(id, snapshot.Battery);
+                }
             }
 
             if (snapshot.Online)
@@ -411,10 +433,39 @@ public sealed class MainForm : MacForm
         UpdateTray();
     }
 
+    /// <summary>内容区滚轮滚动（不显示滚动条，避免布局抖动）。</summary>
+    public bool PreFilterMessage(ref Message m)
+    {
+        const int WM_MOUSEWHEEL = 0x020A;
+        if (m.Msg != WM_MOUSEWHEEL || _content is null || _content.IsDisposed)
+            return false;
+
+        var client = _content.PointToClient(Cursor.Position);
+        if (!_content.ClientRectangle.Contains(client))
+            return false;
+
+        var delta = (short)((long)m.WParam >> 16);
+        if (_maxScroll <= 0)
+            return false;
+
+        _scrollY = Math.Clamp(_scrollY - delta / 120 * 56, 0, _maxScroll);
+        Relayout();
+        return true;
+    }
+
     private void Relayout()
     {
-        var width = Math.Max(240, _content.ClientSize.Width - Edge * 2);
-        var y = 4;
+        if (_content.Width <= 0 || _content.Height <= 0)
+            return;
+
+        var width = Math.Max(180, _content.Width - Edge * 2);
+        var count = _settings.SelectedDevices.Count;
+        var contentHeight = 4 + count * (CardHeight + Gap) - Gap + 8;
+
+        _maxScroll = Math.Max(0, contentHeight - _content.Height);
+        _scrollY = Math.Clamp(_scrollY, 0, _maxScroll);
+
+        var y = 4 - _scrollY;
         foreach (var id in _settings.SelectedDevices)
         {
             if (!_cards.TryGetValue(id, out var card))

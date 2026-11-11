@@ -1,14 +1,19 @@
-﻿using System.Drawing.Drawing2D;
+using System.Drawing.Drawing2D;
 
 namespace BatteryWidget;
 
 /// <summary>macOS 风格开关（40×22 圆角轨道 + 带动画的白色滑块）。</summary>
 public sealed class MacSwitch : Control
 {
-    private readonly System.Windows.Forms.Timer _animation = new() { Interval = 15 };
+    private const int DurationMs = 180;
+
+    private readonly System.Windows.Forms.Timer _animation = new() { Interval = 1000 / 60 };
     private bool _checked;
     private bool _hover;
     private float _position;
+    private float _from;
+    private float _to;
+    private long _startTicks;
 
     public event EventHandler? CheckedChanged;
 
@@ -19,8 +24,9 @@ public sealed class MacSwitch : Control
         {
             if (_checked == value)
                 return;
+
             _checked = value;
-            StartAnimation();
+            BeginAnimation();
             CheckedChanged?.Invoke(this, EventArgs.Empty);
         }
     }
@@ -35,31 +41,39 @@ public sealed class MacSwitch : Control
         _animation.Tick += (_, _) => Animate();
     }
 
-    private void StartAnimation()
+    /// <summary>从当前位置开始补间，快速连点也不会跳变。</summary>
+    private void BeginAnimation()
     {
+        _from = _position;
+        _to = _checked ? 1f : 0f;
+        _startTicks = Environment.TickCount64;
         _animation.Start();
     }
 
     private void Animate()
     {
-        var target = _checked ? 1f : 0f;
-        var delta = target - _position;
-        if (Math.Abs(delta) < 0.03f)
+        var progress = Math.Clamp((Environment.TickCount64 - _startTicks) / (float)DurationMs, 0f, 1f);
+        var eased = 1f - MathF.Pow(1f - progress, 3f);
+        _position = _from + (_to - _from) * eased;
+
+        if (progress >= 1f)
         {
-            _position = target;
+            _position = _to;
             _animation.Stop();
         }
-        else
-        {
-            _position += delta * 0.55f;
-        }
+
         Invalidate();
     }
 
-    protected override void OnClick(EventArgs e)
+    // 在 MouseDown 立即切换：比 Click（要求按下与抬起都在控件内）更跟手
+    protected override void OnMouseDown(MouseEventArgs e)
     {
-        base.OnClick(e);
-        Checked = !Checked;
+        base.OnMouseDown(e);
+        if (e.Button == MouseButtons.Left)
+        {
+            Focus();
+            Checked = !Checked;
+        }
     }
 
     protected override void OnMouseEnter(EventArgs e)
@@ -82,7 +96,7 @@ public sealed class MacSwitch : Control
         g.SmoothingMode = SmoothingMode.AntiAlias;
 
         var track = new RectangleF(0.5f, 1f, Width - 1f, Height - 2f);
-                var trackColor = Color.FromArgb(
+        var trackColor = Color.FromArgb(
             (int)(233 + (52 - 233) * _position),
             (int)(233 + (199 - 233) * _position),
             (int)(236 + (89 - 236) * _position));
@@ -111,8 +125,3 @@ public sealed class MacSwitch : Control
         base.Dispose(disposing);
     }
 }
-
-
-
-
-
