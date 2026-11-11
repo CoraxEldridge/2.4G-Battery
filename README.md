@@ -4,8 +4,57 @@
 >
 > 本仓库只保证作者手上的 **迈从 G87** 与 **罗技 Pop-Up Touch for Business** 能读到电量。
 > 其它品牌 / 型号的 2.4G 设备（不同电量特性、不同报告 ID、不同状态字节）**请自行用 AI Agent
-> 阅读本仓库源码后适配**：把设备 VID/PID、HID 报告描述符、原始报告字节喂给 AI Agent，
+> 阅读本仓库源码后适配**：根据我的设备
+> 
+> 或把设备 VID/PID、HID 报告描述符、原始报告字节喂给 AI Agent，
 > 让它照着 `src/BatteryWidget.Core/Protocols/` 里的写法新增或修改一个 Provider 即可。
+
+## 给你的 AI Agent 的提示词（复制即用）
+
+把下面这段整体复制给 AI Agent（Claude Code / Cursor / Codex / DeepSeek 等），
+并把 `<品牌型号>`、`<VID>`、`<PID>` 换成你自己的设备即可。
+
+~~~~text
+你是 Windows 桌面开发工程师。仓库 https://github.com/CoraxEldridge/2.4G-Battery
+是一个 .NET 10 WinForms 写的 2.4G 无线设备电量小工具，目前只适配了「迈从 G87」和
+「罗技 Pop-Up Touch for Business」。请帮我把 <品牌型号>（VID=<VID>, PID=<PID>）适配进去。
+
+一、先摸清设备
+1. 运行 `dotnet run --project tools\HidProbe -- full`，列出全部 HID 接口，
+   按 VID/PID 找到我的设备，记录 usage page、input/output/feature 报告长度、产品名。
+2. 需要报告描述符时用 `HidProbe.exe dev <idx>` 导出；需要看标准电量字段用 `HidProbe.exe read`。
+
+二、定位电量
+1. 先查有没有标准 HID 电量字段（usage page 0x0006/usage 0x0020、0x0085/0x0066、0x000D/0x003B），
+   有的话直接按 StandardBatteryProvider 的写法走。
+2. 没有就走厂商通道：逐个尝试 feature report 的 Report ID（0x01..0x10），
+   每次打印 8~32 字节原始数据，反复读 2~3 次，找出会变化的字节。
+3. 用官方驱动/软件的电量百分比做对照，确定哪个字节是电量（0..100）、哪个是状态。
+4. 插拔充电线各读一次，确认状态字节的取值：放电 / 充电中 / 已充满。
+
+三、写代码
+1. 在 src/BatteryWidget.Core/Protocols/ 新建 XxxProvider.cs，实现 IDeviceProvider：
+   - `Read(DeviceReadRequest request)` 返回 List<DeviceSnapshot>
+   - 用 HidEnumerator.Enumerate() 找接口、HidDevice.Open(...) 打开、
+     GetFeature/SetFeature 或 Read/Write 收发
+   - 用 `new BatteryReading(percent, status, voltage, source, detail)` 返回，
+     detail 里务必带上原始字节，方便排查
+2. 在 Services/DeviceDiscovery.cs 注册，id 建议 `xxx:{vid:X4}:{pid:X4}`，
+   让设备出现在「选择设备」列表里。
+3. 设备类型用 DeviceKind.Keyboard / Mouse / Touchpad，名字用 DeviceName(pid) 映射。
+
+四、验证
+1. `dotnet build` 通过后，运行 `HidProbe.exe batt` 打印原始值与解析值。
+2. 运行 `dotnet run --project src/BatteryWidget`，确认卡片电量与官方软件一致。
+3. 插拔充电线，确认「充电中 / 已充满 / 放电中」能正确切换。
+
+约束
+- 只读探测，不要向设备写配置或固件。
+- 不要改动已有 Provider 里已验证的逻辑，以新增文件为主。
+- 完成后告诉我：VID/PID、使用的 Report ID 或 Feature、电量字节、状态字节、改动文件列表。
+~~~~
+
+> 没有设备在手也可以：把 `HidProbe -- full` 的输出和原始报告字节贴给 AI Agent，它同样能推断出解析方式。
 
 Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻系统托盘。
 
