@@ -104,10 +104,11 @@ Windows 桌面小工具，自动扫描 2.4G 无线设备并显示电量，常驻
 用 Inno Setup 7 打包，安装包自带 .NET 运行时，装完可直接运行。
 
 ```powershell
-powershell -File scripts\build-installer.ps1
+dotnet publish src\BatteryWidget\BatteryWidget.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o dist\installer\payload
+ISCC.exe BatteryWidget.iss
 ```
 
-产物：`dist\installer\2.4G-Battery-Setup-1.0.0.exe`（约 42 MB）
+产物：`dist\installer\2.4G-Battery-Setup-1.0.0.exe`（约 46 MB）
 
 - 默认安装到 `%LOCALAPPDATA%\Programs\2.4G Battery`，**不需要管理员权限**；
 - 可选任务：桌面快捷方式、开机自启；
@@ -135,10 +136,10 @@ dotnet run --project src\BatteryWidget
 dotnet build src\BatteryWidget\BatteryWidget.csproj -c Release
 
 # 发布（依赖本机 .NET 10 桌面运行时，体积小）
-powershell -File scripts\publish.ps1
+dotnet publish src\BatteryWidget\BatteryWidget.csproj -c Release -r win-x64 --self-contained false -o dist\BatteryWidget
 
 # 发布（自包含单文件，免安装运行时，约 80MB）
-powershell -File scripts\publish.ps1 -SelfContained
+dotnet publish src\BatteryWidget\BatteryWidget.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o dist\installer\payload
 ```
 
 ## 🗂️ 项目结构
@@ -164,9 +165,7 @@ src/BatteryWidget/                   WinForms 界面 + 托盘
   AppSettings.cs                    本地设置持久化
   app.ico                           应用图标（安装包/快捷方式共用）
 tools/HidProbe/                      逆向 / 诊断命令行工具
-installer/BatteryWidget.iss          Inno Setup 安装脚本
-scripts/publish.ps1                  绿色版发布脚本
-scripts/build-installer.ps1          打包安装程序（发布 + ISCC）
+tools/extract-sarasa.py              从 Sarasa TTC 抽取并子集化界面字体
 ```
 
 ### 🧩 想支持新设备？
